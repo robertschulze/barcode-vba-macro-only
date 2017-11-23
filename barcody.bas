@@ -1,14 +1,14 @@
-Attribute VB_Name = "Modul1"
-
+Attribute VB_Name = "barcody"
 Rem  *****  BASIC  *****
 Rem This software is distributd under The MIT License (MIT)
-Rem Copyright © 2013 Madeta a.s. Jiri Gabriel
+Rem Copyright ? 2013 Madeta a.s. Jiri Gabriel
 Rem Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 Rem The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 Rem THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Rem
 Rem Some code comments translated from Czech into English using an online translator by JonasHeidelberg - careful, might be quite wrong
 Rem Bug fixes in qr_gen by JonasHeidelberg, see  http://stackoverflow.com/questions/41404226/why-does-this-vba-generated-qr-code-stutter-barcode-vba-macro-only
+Rem and https://github.com/witwall/barcode-vba-macro-only/issues/1
 Rem Code of RenderQRCode() and DrawQRCode() by Patratacus for creating QR code from VBA (not Excel formula) taken from http://stackoverflow.com/questions/16143331/generating-2d-pdf417-or-qr-barcodes-using-excel-vba/31663859#31663859
 Option Explicit
 Const BCEnc128$ = "1A1B1B1B1A1B1B1B1A0B0B1C0B0C1B0C0B1B0B1B0C0B1C0B0C1B0B1B0B0C1B0C0B1C0B0B0A1B2B0B1A2B0B1B2A0A2B1B0B2A1B0B2B1A1B2B0A1B0A2B1B0B2A1A2B0B1B2A0B2A1A2A2A0B1B2B0A1B2B0B1A2A1B0B2B1A0B2B1B0A1A1A1C1A1C1A1C1A1A0A0C1C0C0A1C0C0C1A0A1C0C0C1A0C0C1C0A1A0C0C1C0A0C1C0C0A0A1A2C0A1C2A0C1A2A0A2A1C0A2C1A0C2A1A2A2A1A1A0C2A1C0A2A1A2A0C1A2C0A1A2A2A2A0A1C2A0C1A2C0A1A2A1A0C2A1C0A2C1A0A2A3A0A1B0D0A3C0A0A0A0B1D0A0D1B0B0A1D0B0D1A0D0A1B0D0B1A0A1B0D0A1D0B0B1A0D0B1D0A0D1A0B0D1B0A1D0B0A1B0A0D3A2A0A1D0A0B0C3A0A0A0B3B0B0A3B0B0B3A0A3B0B0B3A0B0B3B0A3A0B0B3B0A0B3B0B0A1A1A3A1A3A1A3A1A1A0A0A3C0A0C3A0C0A3A0A3A0C0A3C0A3A0A0C3A0C0A0A2A3A0A3A2A2A0A3A3A0A2A1A0D0B1A0B0D1A0B2B1C2A0A1"
@@ -633,7 +633,7 @@ Sub dmx_rs(ppoly As Integer, pmemptr As Variant, ByVal psize As Integer, ByVal p
       Do While v_x <= psize
         v_y = v_b + 1
         v_z = pmemptr(v_y + psize) Xor pmemptr(v_x)
-        v_a = plen - pblocks + 1 + v_b ' pro pblocks = 1 je to plen ; pro blocks = 2 to musiÂ­byt plen - pblocks + p_b + 1
+        v_a = plen - pblocks + 1 + v_b ' pro pblocks = 1 je to plen ; pro blocks = 2 to musi­byt plen - pblocks + p_b + 1
         Do While v_y <= plen
           pa = v_z: pb = v_ply(v_a): GoSub rsprod
           pmemptr(v_y + psize) = pmemptr(v_y + psize + pblocks) Xor rp
@@ -1489,12 +1489,12 @@ End Function
 Function qr_gen(ptext As String, poptions As String) As String
   Dim encoded1() As Byte ' byte mode (ASCII) all max 3200 bytes
   Dim encix1%
-  Dim ecx_cnt(3) As Integer
-  Dim ecx_pos(3) As Integer
-  Dim ecx_poc(3) As Integer
+  Dim ecx_cnt(3) As Integer ' somehow counts number of characters that could be encoded in a particular mode. Careful  -not overlap-free as long as several options to encode certain bytes are not ruled out!
+  Dim ecx_pos(3) As Integer ' stores position where the characters that could be encoded in a particular mode start.
+  Dim ecx_poc(3) As Integer ' seems to store how many substrings will be encoded in a given mode (1=numeric, 2=alnum, 3=byte)
   Dim eb(1 To 20, 1 To 4) As Integer 'store how many characters should be in which ECI mode. This is a list of rows, each row corresponding a the next batch of characters with a different ECI mode.
   ' eb(i, 1) - ECI mode (1 = numeric, 2 = alphanumeric, 3 = byte)
-  ' eb(i, 2) - last character in previous row
+  ' eb(i, 2) - first character in THIS row (somehow I used to think this contained "last character in previous row", but I think now that this was a mistake
   ' eb(i, 3) - number of characters in THIS row
   ' eb(i, 4) - number of bits for THIS row
   Dim ascimatrix$, mode$, err$
@@ -1508,7 +1508,8 @@ Function qr_gen(ptext As String, poptions As String) As String
   Dim qrp(15) As Integer     ' 1:version,2:size,3:ccs,4:ccb,5:totby,6-12:syncs(7),13-15:versinfo(3)
   Dim qrsync1(1 To 8) As Byte
   Dim qrsync2(1 To 5) As Byte
-
+  Dim current_mode ' ECI mode that current substring will be encoded in
+  
   ascimatrix = ""
   err = ""
   mode = "M"
@@ -1560,8 +1561,8 @@ Function qr_gen(ptext As String, poptions As String) As String
             ecx_poc(3) = ecx_poc(3) + 1
           End If
           eb(ebcnt, 1) = 2         ' Typ alnum
-          eb(ebcnt, 2) = ecx_pos(2)
-          eb(ebcnt, 3) = ecx_cnt(2) - ecx_cnt(1) ' delka
+          eb(ebcnt, 2) = ecx_pos(2) ' starting position where the string to be encoded as alnum starts
+          eb(ebcnt, 3) = ecx_cnt(2) - ecx_cnt(1) ' number of characters to be encoded as alnum (delka)
           ebcnt = ebcnt + 1
           ecx_poc(2) = ecx_poc(2) + 1
           ecx_cnt(2) = 0
@@ -1652,7 +1653,29 @@ Function qr_gen(ptext As String, poptions As String) As String
          " ebb=" & ecx_pos(3) & "." & ecx_cnt(3)
   Next
   ebcnt = ebcnt - 1
-  ' Check that eb() rows are non-overlapping
+  ' **** Since the code above is known to be buggy, but difficult
+  ' **** to understand, add a "safety net" here doing some
+  ' **** plausibility checks and trying to fix known error that
+  ' **** might have been made above
+  ' **1) Check that eb() rows cover the full string (i.e. last eb row is not missing)
+  If (eb(ebcnt, 2) + eb(ebcnt, 3) < Len(ptext)) Then
+    ' oops, eb() does not cover full text. Lets hope the code above just forgot to add the last row
+    If (ecx_pos(1) = eb(ebcnt, 2) + eb(ebcnt, 3)) Then ' This is a quick fix. Not well tested.
+        current_mode = 1
+    Else
+        If (ecx_pos(2) = eb(ebcnt, 2) + eb(ebcnt, 3)) Then ' This is only a guess. Not tested at all. Sorry ;-)
+            current_mode = 2
+        Else
+            current_mode = 3
+        End If
+    End If
+    ebcnt = ebcnt + 1
+    eb(ebcnt, 1) = current_mode
+    eb(ebcnt, 2) = ecx_pos(current_mode)
+    eb(ebcnt, 3) = ecx_cnt(current_mode)
+    ecx_poc(current_mode) = ecx_poc(current_mode) + 1
+  End If
+  ' **2) Check that eb() rows are non-overlapping
   For j = 1 To ebcnt
   
      Debug.Print (j & ". (" & Mid("NAB", eb(j, 1), 1) & "): '" & Replace(Mid(ptext, eb(j, 2), eb(j, 3)), Chr(10), "\n") & "'")
@@ -1719,7 +1742,7 @@ Function qr_gen(ptext As String, poptions As String) As String
 'Debug.Print "ver:" & qrp(1) & mode & " size " & siz & " ecc:" & qrp(3) & "x" & qrp(4) & " d:" & (qrp(5) - qrp(3) * qrp(4))
 'MsgBox "ver:" & qrp(1) & mode & " size " & siz & " ecc:" & qrp(3) & "x" & qrp(4) & " d:" & (qrp(5) - qrp(3) * qrp(4))
   ReDim encoded1(qrp(5) + 2)
-  ' Table 3 — Number of bits in character count indicator for QR Code 2005:
+  ' Table 3 ? Number of bits in character count indicator for QR Code 2005:
   ' mode indicator (1=num,2=AlNum,4=Byte,8=kanji,ECI=7)
   '      mode: Byte Alphanum  Numeric  Kanji
   ' ver 1..9 :  8      9       10       8
@@ -2610,13 +2633,17 @@ Sub Create_GIROCODE_QR()
         "001" & nl & _
         "1" & nl & _
         "SCT" & nl & _
-        "(BIC)" & nl & _ 
-        "(Name of Recipient)" & nl & _ 
-        "(IBAN, e.g., DE12345678900000012345)" & nl & _ 
-        "EUR" & ThisWorkbook.ActiveSheet.Range("H22") & nl & _ 
+        "(BIC)" & nl & _
+        "(Name of Recipient)" & nl & _
+        "(IBAN, e.g., DE12345678900000012345)" & nl & _
+        "EUR" & ThisWorkbook.ActiveSheet.Range("H22") & nl & _
         "" & nl & _
         "" & nl & _
         "(reason for payment / Verwendungszweck)"
     Debug.Print mytext
     Call RenderQRCode(ThisWorkbook.ActiveSheet.Name, "J21", mytext, "mode=M", False)
 End Sub
+
+
+
+
