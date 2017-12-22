@@ -633,7 +633,7 @@ Sub dmx_rs(ppoly As Integer, pmemptr As Variant, ByVal psize As Integer, ByVal p
       Do While v_x <= psize
         v_y = v_b + 1
         v_z = pmemptr(v_y + psize) Xor pmemptr(v_x)
-        v_a = plen - pblocks + 1 + v_b ' pro pblocks = 1 je to plen ; pro blocks = 2 to musi­byt plen - pblocks + p_b + 1
+        v_a = plen - pblocks + 1 + v_b ' pro pblocks = 1 je to plen ; pro blocks = 2 to musiÂ­byt plen - pblocks + p_b + 1
         Do While v_y <= plen
           pa = v_z: pb = v_ply(v_a): GoSub rsprod
           pmemptr(v_y + psize) = pmemptr(v_y + psize + pblocks) Xor rp
@@ -1658,7 +1658,7 @@ Function qr_gen(ptext As String, poptions As String) As String
   ' **** plausibility checks and trying to fix known error that
   ' **** might have been made above
   ' **1) Check that eb() rows cover the full string (i.e. last eb row is not missing)
-  If (eb(ebcnt, 2) + eb(ebcnt, 3) < Len(ptext)) Then
+  If (eb(ebcnt, 2) + eb(ebcnt, 3) < (Len(ptext) + 1)) Then
     ' oops, eb() does not cover full text. Lets hope the code above just forgot to add the last row
     If (ecx_pos(1) = eb(ebcnt, 2) + eb(ebcnt, 3)) Then ' This is a quick fix. Not well tested.
         current_mode = 1
