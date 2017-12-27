@@ -1,3 +1,4 @@
+Attribute VB_Name = "barcody"
 Rem  *****  BASIC  *****
 Rem This software is distributd under The MIT License (MIT)
 Rem Copyright ? 2013 Madeta a.s. Jiri Gabriel
@@ -7,7 +8,7 @@ Rem THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 Rem
 Rem Some code comments translated from Czech into English using an online translator by JonasHeidelberg - careful, might be quite wrong
 Rem Bug fixes in qr_gen by JonasHeidelberg, see  http://stackoverflow.com/questions/41404226/why-does-this-vba-generated-qr-code-stutter-barcode-vba-macro-only
-Rem and https://github.com/witwall/barcode-vba-macro-only/issues/1 and https://github.com/witwall/barcode-vba-macro-only/issues/4
+Rem and https://github.com/witwall/barcode-vba-macro-only/issues/1
 Rem Code of RenderQRCode() and DrawQRCode() by Patratacus for creating QR code from VBA (not Excel formula) taken from http://stackoverflow.com/questions/16143331/generating-2d-pdf417-or-qr-barcodes-using-excel-vba/31663859#31663859
 Option Explicit
 Const BCEnc128$ = "1A1B1B1B1A1B1B1B1A0B0B1C0B0C1B0C0B1B0B1B0C0B1C0B0C1B0B1B0B0C1B0C0B1C0B0B0A1B2B0B1A2B0B1B2A0A2B1B0B2A1B0B2B1A1B2B0A1B0A2B1B0B2A1A2B0B1B2A0B2A1A2A2A0B1B2B0A1B2B0B1A2A1B0B2B1A0B2B1B0A1A1A1C1A1C1A1C1A1A0A0C1C0C0A1C0C0C1A0A1C0C0C1A0C0C1C0A1A0C0C1C0A0C1C0C0A0A1A2C0A1C2A0C1A2A0A2A1C0A2C1A0C2A1A2A2A1A1A0C2A1C0A2A1A2A0C1A2C0A1A2A2A2A0A1C2A0C1A2C0A1A2A1A0C2A1C0A2C1A0A2A3A0A1B0D0A3C0A0A0A0B1D0A0D1B0B0A1D0B0D1A0D0A1B0D0B1A0A1B0D0A1D0B0B1A0D0B1D0A0D1A0B0D1B0A1D0B0A1B0A0D3A2A0A1D0A0B0C3A0A0A0B3B0B0A3B0B0B3A0A3B0B0B3A0B0B3B0A3A0B0B3B0A0B3B0B0A1A1A3A1A3A1A3A1A1A0A0A3C0A0C3A0C0A3A0A3A0C0A3C0A3A0A0C3A0C0A0A2A3A0A3A2A2A0A3A3A0A2A1A0D0B1A0B0D1A0B2B1C2A0A1"
@@ -632,7 +633,7 @@ Sub dmx_rs(ppoly As Integer, pmemptr As Variant, ByVal psize As Integer, ByVal p
       Do While v_x <= psize
         v_y = v_b + 1
         v_z = pmemptr(v_y + psize) Xor pmemptr(v_x)
-        v_a = plen - pblocks + 1 + v_b ' pro pblocks = 1 je to plen ; pro blocks = 2 to musiÂ­byt plen - pblocks + p_b + 1
+        v_a = plen - pblocks + 1 + v_b ' pro pblocks = 1 je to plen ; pro blocks = 2 to musi­byt plen - pblocks + p_b + 1
         Do While v_y <= plen
           pa = v_z: pb = v_ply(v_a): GoSub rsprod
           pmemptr(v_y + psize) = pmemptr(v_y + psize + pblocks) Xor rp
@@ -1680,7 +1681,7 @@ Function qr_gen(ptext As String, poptions As String) As String
      Debug.Print (j & ". (" & Mid("NAB", eb(j, 1), 1) & "): '" & Replace(Mid(ptext, eb(j, 2), eb(j, 3)), Chr(10), "\n") & "'")
   Next j
   i = 1
-  While i < (ebcnt - 1)
+  While i < ebcnt
     If eb(i, 2) + eb(i, 3) <> eb(i + 1, 2) Then
         ' oops, this should not happen. First document it:
         Debug.Print ("eb() rows " & i & " and " & i + 1 & " are overlapping:")
@@ -1719,6 +1720,7 @@ Function qr_gen(ptext As String, poptions As String) As String
     i = i + 1
   Wend
   'Debug.Print ("ebcnt=" & ebcnt) ' ebcnt now has its final value
+  
   ' Calculate how many bits the message has in total?
   c = 0
   For i = 1 To ebcnt
