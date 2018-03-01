@@ -1711,6 +1711,10 @@ Function qr_gen(ptext As String, poptions As String) As String
                 Exit For
             End If
         Next k
+        If eb(i, 2) + eb(i, 3) - eb(i + 1, 2) = 2 Then
+            eb(i, 3) = eb(i, 3) - 2
+            wasfixed = True
+        End If
         If Not (wasfixed) Then
             MsgBox ("The input text analysis failed - entering debug mode...")
             Debug.Assert False
